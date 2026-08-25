@@ -1,0 +1,58 @@
+title: Per-sample pathway scores (ssGSEA)
+language: R
+summary: Turns pathways into ordinary variables, one score per pathway per sample, that you can plot, correlate or test like any other measurement.
+
+GSEA gives one enrichment score per comparison. ssGSEA gives one score **per
+sample**, which changes what you can do with a pathway: correlate it against a
+clinical variable, plot it against time, feed it to a model, or test it between
+groups like any other measurement.
+
+## Any gene sets
+
+MSigDB collections - Hallmark, Reactome, WikiPathways, GO, the oncogenic and
+immunologic signatures - and any number of your own GMT files, which behave
+exactly the same way. An in-house signature list is a first-class citizen here,
+not an afterthought.
+
+## Any organism, any ID type
+
+Set the species in two lines. Row identifiers can be Ensembl, symbol or Entrez;
+anything that is not already a symbol is converted first, because that is the
+namespace the gene set collections use.
+
+Counts are variance-stabilised before scoring: ssGSEA ranks genes within each
+sample, so it needs values on a comparable scale rather than raw counts.
+
+The script supports both the modern GSVA parameter-object interface and the
+older argument-based one, so it will not break on whichever version you have.
+
+## Requirements
+
+R - 4.2 or newer
+GSVA - the scoring implementation
+msigdbr - the MSigDB collections
+GSEABase - reads custom GMT files
+pheatmap - the heatmap
+matrixStats - fast row variances
+DESeq2 - the variance-stabilising transform
+clusterProfiler - ID conversion, if your rows are not symbols
+
+## How to run it
+
+```r
+install.packages(c("msigdbr", "pheatmap", "matrixStats"))
+BiocManager::install(c("GSVA", "GSEABase", "DESeq2", "clusterProfiler"))
+```
+
+Then:
+
+```sh
+Rscript ssgsea_scores.R
+```
+
+Writes a pathways-by-samples score matrix per collection, plus a heatmap of
+the most variable pathways.
+
+## Where to go next
+
+pathway_score_testing.R tests these scores between groups.

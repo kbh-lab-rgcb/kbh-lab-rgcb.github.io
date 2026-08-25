@@ -1,0 +1,56 @@
+title: Differential pathway scores
+language: R
+summary: Tests which pathway scores differ between groups, picking the right test from the number of groups: limma for two, Kruskal-Wallis with post-hoc for more.
+
+Takes a pathways-by-samples score matrix and tests every row for a difference
+between groups. The test is chosen from your data rather than configured:
+
+**Two groups** get limma's moderated t-test. It is worth the dependency
+because it shrinks each pathway's variance towards the average across all
+pathways - with a handful of samples per group, that is the difference between
+a usable ranking and noise.
+
+**Three or more groups** get Kruskal-Wallis, then Dunn's post-hoc on whatever
+survives. The post-hoc step is the one usually skipped, and it is the one that
+answers the actual question: not whether the groups differ but *which pair*
+does.
+
+Non-parametric on purpose for the multi-group case - ssGSEA scores are bounded
+and not normally distributed, and with small groups an ANOVA's assumptions are
+unverifiable rather than merely unverified.
+
+## Not only ssGSEA
+
+Any score matrix fits: protein abundance, metabolite panels, cell-type
+deconvolution fractions, methylation summaries. Rows are features, columns are
+samples.
+
+## When sample names do not match
+
+Pipelines rewrite sample names - dashes become dots, suffixes get appended -
+and the score matrix and the group sheet then disagree. A configurable pattern
+rewrites both sides before matching, defaulting to no rewriting at all.
+
+## Requirements
+
+R - 4.2 or newer
+limma - the two-group moderated t-test
+FSA - Dunn's post-hoc test for three or more groups
+ggplot2 - the box plots
+pheatmap - the heatmap
+
+## How to run it
+
+```r
+install.packages(c("ggplot2", "pheatmap", "FSA"))
+BiocManager::install("limma")
+```
+
+Then:
+
+```sh
+Rscript pathway_score_testing.R
+```
+
+Writes a results table, the post-hoc pairs where relevant, a box-plot panel of
+the most significant pathways and a heatmap.

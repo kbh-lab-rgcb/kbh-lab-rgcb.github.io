@@ -1,0 +1,55 @@
+title: PCA, UMAP and k-means clustering
+language: R
+summary: Asks whether your samples separate by group without being told the groups, with a confusion matrix saying how well they do.
+
+Three views of the same question: do the samples fall into the groups you
+think they do, judged on expression alone?
+
+The k-means step is the useful part and the one usually left out. It clusters
+the samples blind, then tabulates those clusters against your real labels. A
+clean diagonal means the effect is strong. A muddle means it is subtle or
+confounded - both worth knowing before you read too much into a gene list.
+
+## Any number of groups
+
+The number of clusters defaults to the number of groups you have, whatever
+that is. Override it if you suspect the structure is finer or coarser than
+your labels.
+
+## Two ways in
+
+Either the object written by the DESeq2 block, or your own counts matrix plus
+a sample sheet. Counts are variance-stabilised first; `vst` is fast and fine
+above about thirty samples, `rlog` behaves better on very small experiments.
+
+Only the most variable genes are used - a few hundred, by default - because
+thousands of flat, uninformative genes otherwise drown the signal.
+
+UMAP is skipped automatically below fifteen samples, where it is meaningless.
+The seed is fixed, so the same data gives the same clusters and the same
+layout every run.
+
+## Requirements
+
+R - 4.2 or newer
+DESeq2 - the variance-stabilising transform
+ggplot2 - the plots
+matrixStats - fast row variances
+umap - the UMAP projection, optional
+ggrepel - only if you switch point labels on
+
+## How to run it
+
+```r
+install.packages(c("ggplot2", "matrixStats", "umap"))
+BiocManager::install("DESeq2")
+```
+
+Then:
+
+```sh
+Rscript unsupervised_clustering.R
+```
+
+Writes the plots, the confusion matrix and a table of sample coordinates you
+can use to chase down an outlier.

@@ -1,0 +1,56 @@
+title: Gene set enrichment (GSEA)
+language: R
+summary: Ranks every gene by its test statistic and finds the pathways sitting disproportionately at either end, with no fold-change cutoff needed.
+
+An over-representation test asks which pathways are crowded with genes that
+passed your cutoff. GSEA asks a better question: is a pathway's whole gene set
+shifted towards one end of the ranking? That finds coordinated changes across
+many genes that individually miss significance, which is often exactly what a
+real biological effect looks like.
+
+Ranking is on the Wald statistic, which already folds effect size and
+confidence into one number. For edgeR or limma output use the t statistic.
+
+## Collections
+
+GO, KEGG, Reactome, MSigDB Hallmark and WikiPathways run by default; the other
+MSigDB collections are one word away. Comment out what you do not need - GO is
+the slowest, and Hallmark is the most readable if you only have time for one.
+
+Each collection gets a results table, a dot plot split by direction and a ridge
+plot. The strongest GO terms also get the classic running-score curve.
+
+## Any organism
+
+Three lines set the species. Entrez IDs are looked up automatically when a
+collection needs them, so KEGG and Reactome work even if your table has only
+symbols.
+
+## Requirements
+
+R - 4.2 or newer
+clusterProfiler - the GSEA implementation
+enrichplot - the dot, ridge and running-score plots
+org.Hs.eg.db - the organism annotation; swap for your own
+msigdbr - Hallmark, WikiPathways and the other MSigDB collections
+ReactomePA - only for the Reactome collection
+ggplot2 - plotting
+
+## How to run it
+
+```r
+install.packages(c("ggplot2", "msigdbr"))
+BiocManager::install(c("clusterProfiler", "enrichplot", "org.Hs.eg.db", "ReactomePA"))
+```
+
+Then:
+
+```sh
+Rscript gsea_ranked.R
+```
+
+GSEA is permutation-based, so the seed is fixed and repeated runs agree.
+
+## Where to go next
+
+gsea_bubble_plots.R turns these tables into figures worth publishing.

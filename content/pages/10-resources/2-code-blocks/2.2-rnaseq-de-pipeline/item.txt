@@ -1,0 +1,80 @@
+title: RNA-seq differential expression pipeline
+language: R
+summary: Counts to volcano plots in one command. Downloads expression data, runs DESeq2 across any number of groups, adds gene symbols and draws the figures — all driven by a single config file.
+
+The whole front half of an RNA-seq analysis, wired together. Edit one file,
+run one command, and you get differential expression tables, volcano plots and
+heatmaps for every comparison you asked for.
+
+Everything is set in `config.R` — paths, groups, contrasts, thresholds,
+colours, figure sizes. The four step scripts read it, so a threshold set once
+applies everywhere and cannot drift between steps.
+
+You are not locked into running it all at once. Each numbered script works on
+its own, which is what you want when you are adjusting a colour or a cutoff
+and have no wish to download anything again.
+
+## What it does
+
+01_download_counts.R — fetches expression counts from the GDC for the samples you name
+02_deseq2.R — differential expression for every contrast, plus an object for later clustering
+03_annotate.R — adds gene symbols and Entrez IDs, online with an offline fallback
+04_figures.R — volcano plot, heatmap and a significant-gene table per contrast
+
+## Any number of groups
+
+Two groups or ten. Name them in `config.R` and set `contrasts` to `"all_pairs"`
+to compare every group with every other, or list the pairs you actually care
+about. Groups can also be pooled — `meta_groups` merges several into one so it
+can be compared as a single group.
+
+Already have counts? Set `download_counts <- FALSE` and drop one CSV per group
+into `results/01_counts/`, named after the group. Anything that writes a
+genes-by-samples matrix works: featureCounts, tximport, a GEO supplementary
+file, a spreadsheet.
+
+## Any organism
+
+Three lines in `config.R` set the species. Human, mouse, rat and fly are given
+as examples; anything with an Ensembl dataset and an organism package works.
+
+## Requirements
+
+R — 4.2 or newer
+DESeq2 — the differential expression model
+TCGAbiolinks — only if you are downloading from the GDC
+biomaRt — gene symbol lookup, with an offline fallback
+org.Hs.eg.db — the offline fallback; swap for your own organism
+ggplot2 — the volcano plot
+ggrepel — keeps gene labels from overlapping
+pheatmap — the heatmap
+
+## How to run it
+
+Install what you need:
+
+```r
+install.packages(c("BiocManager", "ggplot2", "ggrepel", "pheatmap"))
+BiocManager::install(c("DESeq2", "TCGAbiolinks", "biomaRt", "org.Hs.eg.db"))
+```
+
+Put all the files in one folder, open `config.R`, set your groups and
+thresholds, then:
+
+```sh
+Rscript run_pipeline.R
+```
+
+Or run a single step:
+
+```sh
+Rscript 04_figures.R
+```
+
+Results land under `results/`, with the figures in `results/03_figures/`.
+
+## Where to go next
+
+The same steps exist as separate blocks if you only want one of them, and the
+pipeline's output feeds straight into the enrichment blocks — the directory
+layout is shared across all of them.

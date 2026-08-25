@@ -1,0 +1,49 @@
+title: KEGG pathway diagrams
+language: R
+summary: Paints your fold changes onto the real KEGG pathway diagram, so you can see where in a pathway the change actually sits.
+
+An enrichment score tells you a pathway is involved. It does not tell you
+*where* - at the receptor, in the kinase cascade, or at the transcriptional
+output. This paints your results onto the actual KEGG diagram so you can see
+it.
+
+Red is higher in the contrast numerator, green is higher in the denominator,
+grey is measured but unchanged, white is not in your data.
+
+## Choosing pathways
+
+Either list the KEGG IDs you want, or point the script at a KEGG GSEA result
+and let it take the most significant few automatically. IDs are written without
+the species prefix, which is added from the organism setting - so the same list
+works for human, mouse or fly.
+
+## The working-directory problem
+
+Pathview has no output-path argument: it writes into the working directory,
+whatever that happens to be. This script changes directory and registers the
+way back with `on.exit()`, so the restore happens **even when Pathview
+throws**. Without that, one failed pathway leaves every later relative path in
+the session pointing at the wrong folder - a bug that stays invisible until
+something much later writes a file somewhere strange.
+
+## Requirements
+
+R - 4.2 or newer
+pathview - fetches the diagram and paints it
+org.Hs.eg.db - the organism annotation; swap for your own
+clusterProfiler - Entrez lookup, only if your table lacks Entrez IDs
+
+## How to run it
+
+```r
+BiocManager::install(c("pathview", "org.Hs.eg.db", "clusterProfiler"))
+```
+
+Set the pathway IDs you want, then:
+
+```sh
+Rscript kegg_pathview.R
+```
+
+Fixing the colour limit rather than letting it float keeps the colours meaning
+the same thing across every contrast you draw.

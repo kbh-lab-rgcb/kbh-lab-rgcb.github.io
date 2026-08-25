@@ -127,19 +127,27 @@ export function flag(value: string): boolean {
  * `03-arun-v.jpg` -> order 3, slug `arun-v`. Files without a prefix sort after
  * prefixed ones, alphabetically.
  *
- * A dotted prefix is read as one number, so `2.1-deseq2` is item 1 of branch 2
- * and sorts before `2.2-...`. That form exists because a nested folder tree
- * reads much better on GitHub when the children carry their parent's number,
- * and someone who writes `01-` instead gets the same result.
+ * A dotted prefix is a *pair*, not a decimal: `2.1-deseq2` is item 1 of branch
+ * 2. That form exists because a nested folder tree reads much better on GitHub
+ * when the children carry their parent's number, and someone who writes `01-`
+ * instead gets the same result.
+ *
+ * The pair is folded into `major + minor / 1000` rather than read with
+ * `Number()`, because `Number("2.10")` is 2.1 and would sort item 10 *before*
+ * item 2 — which is wrong the moment a branch grows past nine items.
  */
 export function parseName(filename: string): { order: number; slug: string } {
   // Only a real extension is stripped, not everything after the last dot —
   // `2.1-deseq2` is a folder whose name contains a dot, not a file called `2`.
   const base = filename.replace(/\.[A-Za-z0-9]{1,8}$/, "");
-  const match = /^(\d{1,4}(?:\.\d{1,4})?)[-_\s]+(.*)$/.exec(base) ??
-    /^(\d{1,4})[-_.\s]+(.*)$/.exec(base);
-  if (match && match[2]) {
-    return { order: Number(match[1]), slug: slugify(match[2]) };
+  const match =
+    /^(\d{1,4})(?:\.(\d{1,4}))?[-_\s]+(.*)$/.exec(base) ??
+    /^(\d{1,4})()[-_.\s]+(.*)$/.exec(base);
+
+  if (match && match[3]) {
+    const major = Number(match[1]);
+    const minor = match[2] ? Number(match[2]) : 0;
+    return { order: major + minor / 1000, slug: slugify(match[3]) };
   }
   return { order: Number.POSITIVE_INFINITY, slug: slugify(base) };
 }

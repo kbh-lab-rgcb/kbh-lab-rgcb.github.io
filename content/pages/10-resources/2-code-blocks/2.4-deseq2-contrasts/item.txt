@@ -1,0 +1,56 @@
+title: DESeq2 across any number of groups
+language: R
+summary: Differential expression for two groups or ten, from any counts matrix, with every pairwise comparison generated for you.
+
+Reads one counts CSV per group, runs DESeq2 for each comparison you ask for,
+and writes a results table per contrast.
+
+Nothing in it counts your groups. Name two and you get one comparison; name
+five and `contrasts <- "all_pairs"` gives you all ten. Or list only the pairs
+you care about. Groups can also be pooled: `meta_groups` merges several into
+one so it can be compared as a single group, which replaces the usual
+hand-built "everything else versus control" matrix.
+
+The counts can come from anywhere that writes a genes-by-samples matrix -
+featureCounts, tximport, a GEO supplementary file, the GDC, a spreadsheet.
+
+## Which way round is the fold change
+
+Every contrast is written as `c(numerator, denominator)`, so a **positive
+log2FoldChange means higher in the first name**. The two group names are also
+written into every output table, so a file opened months later still says
+which way round the comparison ran.
+
+## What it handles for you
+
+Ensembl version suffixes are stripped so `ENSG00000141510.16` and
+`ENSG00000141510` match; where that creates duplicate IDs the counts are
+summed rather than discarded. Non-numeric columns that travelled along with a
+matrix are dropped. Genes with almost no reads are filtered out, which speeds
+things up and slightly improves the multiple-testing correction.
+
+## Requirements
+
+R - 4.2 or newer
+DESeq2 - the differential expression model
+ashr - only if you switch shrink_lfc on
+
+## How to run it
+
+```r
+BiocManager::install("DESeq2")
+```
+
+Point `groups` at your counts files, choose your contrasts, then:
+
+```sh
+Rscript deseq2_contrasts.R
+```
+
+Writes `results/02_deseq2/<contrast>/deseq2_results.csv` and a
+`dds_objects.rds` holding the fitted objects for the clustering and
+pathway-scoring blocks.
+
+## Where to go next
+
+gene_id_conversion.R adds readable gene symbols.

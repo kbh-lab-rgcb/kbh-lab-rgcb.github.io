@@ -1,0 +1,51 @@
+title: Download expression counts from the GDC
+language: R
+summary: Pulls RNA-seq counts for any GDC project straight into one CSV per group, ready for differential expression.
+
+Queries the NCI Genomic Data Commons for the samples you name, downloads them
+once, and splits them into one CSV per group with genes down the rows and
+samples across the columns. That is the shape every other block here expects.
+
+Works for any GDC project, any data category and any workflow. Nothing in it
+is tied to a particular study.
+
+One detail worth getting right: differential expression needs **raw counts**.
+The `unstranded` matrix is raw; anything named `tpm_` or `fpkm_` is already
+normalised and breaks the model DESeq2 fits. The default is correct, so change
+it only if you know why.
+
+## What you give it
+
+A project ID, and a named list of barcodes per group. Barcodes can be written
+inline or kept in a text file, one per line, which is easier to maintain when
+there are hundreds. Group names become filenames, so keep them short.
+
+The GDC returns full-length barcodes while people usually paste shortened
+ones, so matching is done on prefixes rather than exact equality. A sample
+listed in two groups is rejected outright - it would otherwise be counted
+twice and quietly bias every comparison.
+
+## Requirements
+
+R - 4.2 or newer
+TCGAbiolinks - queries and downloads from the GDC
+SummarizedExperiment - the object the download comes back in
+
+## How to run it
+
+```r
+BiocManager::install(c("TCGAbiolinks", "SummarizedExperiment"))
+```
+
+Open the script, set `gdc_project` and your `groups`, then:
+
+```sh
+Rscript gdc_download.R
+```
+
+Writes `results/01_counts/<group>.csv`, plus a combined matrix and a sample
+sheet. The first run downloads a lot; later runs reuse the cache.
+
+## Where to go next
+
+deseq2_contrasts.R reads these CSVs.

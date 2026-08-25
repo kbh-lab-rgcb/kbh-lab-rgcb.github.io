@@ -1,0 +1,53 @@
+title: Gene ID conversion
+language: R
+summary: Turns Ensembl IDs into gene symbols and Entrez IDs for any organism, online with an automatic offline fallback.
+
+Ensembl IDs are unambiguous and unreadable. This adds the symbol everyone
+recognises, plus the Entrez ID that KEGG and Reactome insist on.
+
+Two lookup routes are tried in order. biomaRt is queried first because it is
+the most complete, and if it cannot be reached - which happens more often than
+anyone would like - the script falls back to the offline organism package
+automatically rather than failing. A flaky connection never costs you the run.
+
+## Any organism
+
+Three lines set the species. Human, mouse, rat, fly and zebrafish are listed as
+examples, and `external_gene_name` works as a symbol column for every Ensembl
+species if you are not sure which is right for yours.
+
+## Nothing vanishes
+
+Genes with no symbol keep their original ID rather than becoming `NA`. That
+matters more than it sounds: an `NA` here silently drops the gene from every
+downstream plot and ranked list, and you would never know it had gone.
+
+Where one ID maps to several symbols the first is kept, so the join cannot
+quietly multiply the number of rows in your results table.
+
+## Requirements
+
+R - 4.2 or newer
+biomaRt - the online lookup
+org.Hs.eg.db - the offline fallback; swap for your own organism
+AnnotationDbi - reads the organism package
+
+## How to run it
+
+```r
+BiocManager::install(c("biomaRt", "org.Hs.eg.db", "AnnotationDbi"))
+```
+
+Then:
+
+```sh
+Rscript gene_id_conversion.R
+```
+
+Annotates every `deseq2_results.csv` it finds, writing
+`deseq2_results_annotated.csv` beside each one. Point `input_file` at a single
+table to do just that one.
+
+## Where to go next
+
+volcano_heatmap.R for figures, or gsea_ranked.R for enrichment.

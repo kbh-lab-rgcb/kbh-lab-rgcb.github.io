@@ -14,10 +14,10 @@ Contrast normalization — applies Enhance Contrast per channel before 16→8-bi
 LUT-preserving channel export — duplicates each channel individually from the composite hyperstack so fluorescence colors are retained in saved TIFFs
 Correct composite rendering — uses Flatten instead of Stack to RGB, which renders the composite exactly as displayed including LUT assignments
 Calibration preserved — removes the hardcoded Set Scale override; Bio-Formats reads the correct µm/pixel calibration from OIR metadata automatically
-Both macros mirror the input subfolder structure in the output directories and support arbitrarily nested input folders.## Requirements
+Both macros mirror the input subfolder structure in the output directories and support arbitrarily nested input folders.
 
 
-## Reuirements
+## Requirements
 
 Fiji (ImageJ ≥ 1.53 recommended)
 Bio-Formats plugin — included in standard Fiji; handles Olympus OIR import

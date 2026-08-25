@@ -1,0 +1,58 @@
+title: Primer regions from FIMO motif hits
+language: R
+summary: Picks the motif hits worth designing primers against and extracts the surrounding genome sequence, ready to paste into Primer3 or Primer-BLAST.
+
+You have run FIMO, you have hundreds of motif hits, and you need a handful of
+sequence windows you can actually design primers against. This picks them and
+extracts them.
+
+## Why the case of the matched sequence matters
+
+Genome FASTA exports from UCSC put coding sequence in uppercase and everything
+else in lowercase. If your FIMO input carried that convention, the case of
+`matched_sequence` tells you where the hit sits:
+
+all lowercase - intron or intergenic, safe to design against
+ALL UPPERCASE - coding sequence, skipped
+Mixed case - a UTR or CDS boundary, skipped
+
+This is read from the FIMO table, not by scanning the genome window: a
+whole-genome FASTA has no CDS case distinction, so scanning it would be
+meaningless. If your input had no such convention, switch the filter off and
+every hit is treated as usable.
+
+## The minus-strand problem
+
+Usable minus-strand hits are often scarce - sometimes every one falls inside
+coding sequence. Rather than silently returning fewer regions than you asked
+for, the script says so and substitutes extra plus-strand hits, marking them in
+the output table so a substitution is never mistaken for a real minus hit.
+
+## Any organism
+
+Genome file, FIMO tables and window size are all settings. Targets can be
+listed by hand or discovered automatically from a folder. Column names are
+configurable too, since the MEME Suite has renamed them across versions.
+
+## Requirements
+
+R - 4.2 or newer
+Biostrings - reads the genome and extracts sequence
+FIMO - from the MEME Suite, run separately to produce the input tables
+
+## How to run it
+
+```r
+BiocManager::install("Biostrings")
+```
+
+Run FIMO first to get one `.tsv` per target. Point `genome_file` at the same
+build FIMO used - a mismatch means the coordinates silently do not line up -
+then:
+
+```sh
+Rscript fimo_primer_regions.R
+```
+
+Writes a FASTA to paste into Primer3 or NCBI Primer-BLAST, and a table
+recording exactly which hit each sequence came from.

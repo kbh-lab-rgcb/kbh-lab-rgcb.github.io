@@ -1,0 +1,59 @@
+title: Volcano plot and heatmap
+language: R
+summary: Publication-ready volcano plots and heatmaps from any differential-expression table, with every threshold, colour and dimension exposed at the top.
+
+Two figures from one results table. Works with DESeq2, edgeR or limma output -
+anything with a fold-change column and an adjusted p-value column, named in the
+config block.
+
+## Details that matter
+
+**One cutoff, everywhere.** The dashed guide lines, the point colours and the
+heatmap gene set all read the same `lfc_cutoff`, so a plot can never draw its
+threshold in one place and apply it in another.
+
+**Labels pick the most significant genes, not the largest fold changes.** A
+huge fold change on a barely-expressed gene is the usual way a volcano plot
+ends up labelling noise.
+
+**Adjusted p-values that underflow to zero are handled.** `log10(0)` is `-Inf`,
+which silently drops the very genes the plot exists to show; they are floored
+at the smallest non-zero value instead.
+
+**The heatmap matches on gene ID, then relabels to symbols for display.**
+Matching on the symbol against a matrix keyed by ID gives an empty intersection
+and a heatmap that is never drawn and never complains - a failure worth knowing
+about, because it looks exactly like having no significant genes.
+
+## Everything is tunable
+
+Output formats, dimensions, dpi, font size, point size and transparency, the
+three direction colours, how many genes are labelled on each side, axis limits,
+tick spacing, heatmap palette, clustering and row font. Fix the axis limits to
+put several contrasts side by side on the same scale.
+
+## Requirements
+
+R - 4.2 or newer
+ggplot2 - the volcano plot
+ggrepel - keeps gene labels from overlapping
+pheatmap - the heatmap
+
+## How to run it
+
+```r
+install.packages(c("ggplot2", "ggrepel", "pheatmap"))
+```
+
+Then:
+
+```sh
+Rscript volcano_heatmap.R
+```
+
+Plots every annotated results table it finds. The heatmap needs the counts
+matrices as well; leave `groups` empty and you get the volcano alone.
+
+## Where to go next
+
+gsea_ranked.R looks for coordinated shifts a per-gene cutoff would miss.

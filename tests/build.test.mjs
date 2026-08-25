@@ -11,6 +11,7 @@ import { tmpdir } from "node:os";
 import { dirname, join, posix, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { buildSite } from "../src/build.ts";
+import { parseName } from "../src/content/text.ts";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const fixtureOut = join(tmpdir(), `crp7-fixture-${process.pid}`);
@@ -534,7 +535,52 @@ test("a repository with nothing to download renders no Files section", () => {
   assert.match(html, /href="https:\/\/example\.org\/docs"/);
 });
 
+/*
+ * A dotted prefix is a pair, not a decimal. Number("2.10") is 2.1, which would
+ * sort item 10 before item 2 -- wrong the moment a branch grows past nine
+ * items, which the code-blocks branch already has.
+ */
+test("dotted ordering prefixes sort past nine", () => {
+  const names = ["2.2-b", "2.3-c", "2.9-i", "2.10-j", "2.13-m", "01-first", "10-tenth"];
+  const sorted = names
+    .map((name) => ({ name, ...parseName(name) }))
+    .sort((a, b) => a.order - b.order)
+    .map((entry) => entry.name);
+
+  assert.deepEqual(sorted, ["01-first", "2.2-b", "2.3-c", "2.9-i", "2.10-j", "2.13-m", "10-tenth"]);
+
+  // The slug never keeps the prefix, whichever form it took.
+  assert.equal(parseName("2.10-ssgsea-scores").slug, "ssgsea-scores");
+  assert.equal(parseName("03-arun-v.jpg").slug, "arun-v");
+  // A folder name containing a dot is not a file with an extension.
+  assert.equal(parseName("2.1-deseq2").order, 2.001);
+  // No prefix at all still sorts to the end.
+  assert.equal(parseName("coco repo").order, Number.POSITIVE_INFINITY);
+});
+
+test("every resource item publishes a page with its files downloadable", () => {
+  const page = realResult.site.pages.find((p) => p.kind === "resources");
+  assert.ok(page, "the site should have a resources page");
+
+  const items = page.resourceGroups.flatMap((group) => group.items);
+  assert.ok(items.length > 0, "there should be resource items");
+
+  for (const item of items) {
+    const html = real[posix.join(item.path, "index.html")];
+    assert.ok(html, `${item.path} should have been written`);
+
+    for (const file of item.downloads) {
+      assert.ok(
+        existsSync(join(realOut, file.src)),
+        `${file.src} should have been copied into the site`,
+      );
+      assert.ok(html.includes("download"), `${item.path} should offer a download`);
+    }
+  }
+});
+
 /* ----------------------------------------------- Only-if-added: stories */
+
 
 
 test("a section with no story lines gets no story markup at all", () => {

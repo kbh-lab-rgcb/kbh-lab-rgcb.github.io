@@ -1,0 +1,49 @@
+title: GSEA bubble plots
+language: R
+summary: Two publication-ready views of any GSEA result: activated and suppressed side by side, or mirrored across a single shared axis.
+
+Enrichment tables are hard to read and harder to present. These are the two
+figures that actually communicate the result.
+
+The **facet** plot puts activated and suppressed sets in separate panels. Use
+it when one direction has far more terms than the other.
+
+The **mirror** plot puts both on one axis with suppressed sets running left of
+zero. It is the more honest of the two when you want to compare the magnitude
+of up against down, because both share a single scale rather than each getting
+its own.
+
+Bubble size shows how many genes actually drive the enrichment - the leading
+edge - which is more informative than the size of the set as annotated. Fill
+shows the adjusted p-value.
+
+## Works with any enrichment output
+
+Any CSV with NES, adjusted p-value, set size and leading-edge columns, which
+is what clusterProfiler and the GSEA block here write. Column names are set in
+the config block if yours differ.
+
+## Everything is tunable
+
+Terms shown per direction, how they are ordered, the significance cutoff,
+bubble size range, both fill colours, text sizes, term wrap width, panel
+border, legend position, dimensions and output formats.
+
+## Requirements
+
+R - 4.2 or newer
+ggplot2 - the plots
+
+## How to run it
+
+```r
+install.packages("ggplot2")
+```
+
+Then:
+
+```sh
+Rscript gsea_bubble_plots.R
+```
+
+Draws both views for every GSEA results table it finds.
