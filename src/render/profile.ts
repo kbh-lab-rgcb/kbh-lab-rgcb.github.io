@@ -63,10 +63,13 @@ export function papersFor(site: Site, member: Member): PublicationYear[] {
   const pasted = member.sections.flatMap((section) => section.papers);
   const listed = member.papers.length > 0 || pasted.length > 0;
 
+  // Both lists on the publications page, not just the lab's own: the PI's
+  // page would otherwise lose his doctoral and post-doctoral work the moment
+  // that work moved into its own folder, and nobody else is named in it.
   const own = listed
     ? [...member.papers, ...pasted]
     : site.pages.flatMap((page) =>
-        page.publicationYears.flatMap((group) =>
+        [...page.publicationYears, ...page.piPublicationYears].flatMap((group) =>
           group.items.filter((item) => citedAs(item.citation, member.name)),
         ),
       );

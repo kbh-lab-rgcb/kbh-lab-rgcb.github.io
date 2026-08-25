@@ -45,6 +45,14 @@ export const icons = {
   linkedin: svg(
     '<path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-4 0v7h-4v-7a6 6 0 0 1 6-6Z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/>',
   ),
+  download: svg('<path d="M12 3v12M7 11l5 5 5-5"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/>'),
+  code: svg('<path d="m9 17-5-5 5-5M15 7l5 5-5 5"/>'),
+  repo: svg(
+    '<path d="M5 3h11a2 2 0 0 1 2 2v16H6a2 2 0 0 1-2-2V4a1 1 0 0 1 1-1Z"/><path d="M4 17.5A2 2 0 0 1 6 17h12"/><path d="M9 7h5"/>',
+  ),
+  copy: svg('<rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>'),
+  check: svg('<path d="m5 13 4 4L19 7"/>'),
+  terminal: svg('<rect x="2" y="4" width="20" height="16" rx="2"/><path d="m7 9 3 3-3 3M13 15h4"/>'),
   x: svg('<path d="m3 3 8.7 11.6L3.5 21M21 3l-8.4 9.2M10 3H3l11 15h7L10 3Z"/>'),
 } as const;
 
@@ -65,6 +73,9 @@ export function iconForLink(kind: string): string {
     github: "github",
     linkedin: "linkedin",
     twitter: "x",
+    repo: "repo",
+    code: "code",
+    download: "download",
   };
   return icons[map[kind] ?? "link"];
 }
@@ -80,6 +91,7 @@ export function iconForKind(kind: string): string {
     gallery: "image",
     contact: "mail",
     links: "external",
+    resources: "code",
   };
   return icons[map[kind] ?? "arrowRight"];
 }

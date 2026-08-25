@@ -34,6 +34,7 @@ import {
 } from "./text.ts";
 import type {
   Album,
+  Download,
   GalleryItem,
   Img,
   LinkItem,
@@ -41,6 +42,7 @@ import type {
   Page,
   PageKind,
   Publication,
+  ProfileLink,
   PublicationYear,
   ResourceGroup,
   ResourceItem,
@@ -799,6 +801,188 @@ async function loadAlbums(ctx: Ctx): Promise<Album[]> {
  * bargain here: the page is never worse than slightly plain, and the editor is
  * told what would make it better.
  */
+/* ------------------------------------------------------------- Resources */
+
+/**
+ * Subfolders of a page that are never a resource branch.
+ *
+ * Everything else *is* one, which is the point: `1-repositories/` and
+ * `2-code-blocks/` are not named anywhere in this file, so `3-datasets/`
+ * becomes a third branch by existing.
+ */
+const RESERVED_FOLDERS = new Set([
+  "banner",
+  "text",
+  "figures",
+  "photos",
+  "stories",
+  "lists",
+  "links",
+  "years",
+  "pi",
+]);
+
+/** Header keys on an `item.txt` that become links, in the order shown. */
+const RESOURCE_LINK_KEYS: [string, string, string][] = [
+  ["repo", "github", "Repository"],
+  ["github", "github", "GitHub"],
+  ["gitlab", "github", "GitLab"],
+  ["colab", "external", "Open in Colab"],
+  ["binder", "external", "Launch on Binder"],
+  ["zenodo", "doi", "Zenodo"],
+  ["doi", "doi", "DOI"],
+  ["paper", "pubmed", "Paper"],
+  ["docs", "document", "Documentation"],
+  ["demo", "external", "Demo"],
+  ["url", "url", "Website"],
+  ["website", "url", "Website"],
+];
+
+/** A header value that is only useful if it is a real, absolute address. */
+function absoluteUrl(value: string): string | null {
+  const trimmed = value.trim();
+  if (!trimmed) return null;
+  const withScheme = /^https?:\/\//i.test(trimmed)
+    ? trimmed
+    : /^(www\.|github\.com|gitlab\.com)/i.test(trimmed)
+      ? `https://${trimmed}`
+      : // `owner/name` is how everybody writes a repository.
+        /^[\w.-]+\/[\w.-]+$/.test(trimmed)
+        ? `https://github.com/${trimmed}`
+        : null;
+  if (!withScheme) return null;
+  try {
+    return new URL(withScheme).href;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * One repository or code block: one folder with an `item.txt` in it.
+ *
+ * A folder with no `item.txt` still becomes an item — titled from its own
+ * name, with its files downloadable — because a script somebody uploaded and
+ * has not described yet is far more useful published than withheld.
+ */
+async function loadResourceItem(
+  ctx: Ctx,
+  groupDir: string,
+  groupRelDir: string,
+  groupSlug: string,
+  dirName: string,
+): Promise<ResourceItem> {
+  const { order, slug } = parseName(dirName);
+  const itemDir = join(groupDir, dirName);
+
+  const textFiles = await listTextFiles(itemDir);
+  const descFile =
+    textFiles.find((file) => /^(item|index)\.(txt|md|markdown)$/i.test(file)) ?? textFiles[0] ?? "";
+  const doc = parseDoc(descFile ? ((await readIfPresent(join(itemDir, descFile))) ?? "") : "");
+  const { intro, sections } = parseProfile(doc.body);
+
+  const title = field(doc.fields, "title", "name") || titleFromSlug(slug);
+  const text = plainText(intro);
+
+  const links: ProfileLink[] = [];
+  let repo: ProfileLink | null = null;
+  for (const [key, kind, label] of RESOURCE_LINK_KEYS) {
+    const url = absoluteUrl(field(doc.fields, key));
+    if (!url || links.some((link) => link.url === url) || repo?.url === url) continue;
+    const link: ProfileLink = { kind, label: field(doc.fields, `${key}label`) || label, url };
+    // The repository is pulled out of the list because it is the headline
+    // action on a repo card — and a code block may carry one too, pointing at
+    // wherever the script actually lives.
+    if (!repo && /^(repo|github|gitlab)$/.test(key)) repo = link;
+    else links.push(link);
+  }
+
+  // Everything in the folder except the file that describes it. The walk is
+  // recursive, so a whole repository dropped inside a code block keeps its
+  // shape rather than collapsing into a flat pile.
+  const downloads: Download[] = [];
+  for (const name of await ctx.files.walk(itemDir)) {
+    if (name === descFile || /^readme\.md$/i.test(name)) continue;
+    const file = await ctx.files.copy(
+      join(itemDir, ...name.split("/")),
+      `${ctx.slug}/${groupSlug}/${slug}`,
+      name,
+    );
+    if (file) downloads.push(file);
+  }
+
+  if (!descFile) {
+    ctx.warnings.push({
+      file: `${groupRelDir}/${dirName}/`,
+      message: "This resource has no `item.txt`, so nothing explains what it is.",
+      fallback: `It is listed as “${title}” with its files available to download.`,
+    });
+  }
+
+  return {
+    slug,
+    order,
+    title,
+    summary:
+      field(doc.fields, "summary", "description", "lead", "tagline") || excerpt(text, 160),
+    html: renderMarkdown(intro),
+    text,
+    repo,
+    links,
+    language: field(doc.fields, "language", "lang", "runtime"),
+    downloads,
+    sections,
+    path: `${ctx.slug}/${groupSlug}/${slug}/`,
+    fields: doc.fields,
+  };
+}
+
+/**
+ * The branches of a Resources page, each holding its items.
+ *
+ * Two levels of folder and nothing else: the branch is a folder, an item is a
+ * folder inside it. Adding `1-repositories/03-coco-repo/` is the whole of
+ * "publish a new repository" — the card, the page and the download all follow
+ * from the folder being there.
+ */
+async function loadResourceGroups(ctx: Ctx): Promise<ResourceGroup[]> {
+  const groups: ResourceGroup[] = [];
+
+  for (const dirName of await listDirs(ctx.pageDir)) {
+    if (RESERVED_FOLDERS.has(dirName.toLowerCase())) continue;
+
+    const { order, slug } = parseName(dirName);
+    const groupDir = join(ctx.pageDir, dirName);
+    const groupRelDir = `${ctx.relDir}/${dirName}`;
+    const meta = parseDoc((await readIfPresent(join(groupDir, "group.txt"))) ?? "");
+
+    const items: ResourceItem[] = [];
+    for (const itemDir of await listDirs(groupDir)) {
+      items.push(await loadResourceItem(ctx, groupDir, groupRelDir, slug, itemDir));
+    }
+    items.sort((a, b) => a.order - b.order || a.title.localeCompare(b.title));
+
+    if (items.length === 0) {
+      ctx.warnings.push({
+        file: `${groupRelDir}/`,
+        message: "This resource branch has no items in it yet.",
+        fallback: `It was left off the page. Add a folder such as ${dirName}/01-my-repo/.`,
+      });
+      continue;
+    }
+
+    groups.push({
+      slug,
+      order,
+      title: field(meta.fields, "title", "name") || titleFromSlug(slug),
+      lead: field(meta.fields, "tagline", "lead", "summary") || plainText(meta.body),
+      items,
+    });
+  }
+
+  return groups.sort((a, b) => a.order - b.order || a.slug.localeCompare(b.slug));
+}
+
 function resolveCitedPapers(
   pages: Page[],
   sources: { relDir: string; stories: Story[] }[],
@@ -806,7 +990,7 @@ function resolveCitedPapers(
 ): void {
   const byDoi = new Map<string, Publication>();
   for (const page of pages) {
-    for (const year of page.publicationYears) {
+    for (const year of [...page.publicationYears, ...page.piPublicationYears]) {
       for (const item of year.items) {
         for (const link of item.links) {
           if (link.kind !== "doi") continue;
@@ -880,6 +1064,7 @@ export async function loadSite(options: {
     cacheRoot: options.cacheRoot,
   });
   warnings.push(...images.warnings);
+  const files = createFilePipeline({ outRoot: options.outRoot });
 
   const pagesRoot = join(options.contentDir, "pages");
   const folders = await listDirs(pagesRoot);
@@ -901,7 +1086,7 @@ export async function loadSite(options: {
     const kind = kindFor(slug);
 
     const meta = parseDoc((await readIfPresent(join(pageDir, "page.txt"))) ?? "");
-    const ctx: Ctx = { pageDir, relDir, slug, images, warnings };
+    const ctx: Ctx = { pageDir, relDir, slug, images, files, warnings };
 
     // On these pages `text/` pairs with `photos/` — the files in it are people
     // or captions, not prose sections. Loading them as both would print every
@@ -924,8 +1109,11 @@ export async function loadSite(options: {
           ? await loadMembers(ctx, kind === "alumni", config.labAuthors)
           : [],
       publicationYears:
-        kind === "publications" ? await loadPublications(ctx, config.labAuthors) : [],
+        kind === "publications" ? await loadPublications(ctx, config.labAuthors, "years", true) : [],
+      piPublicationYears:
+        kind === "publications" ? await loadPublications(ctx, config.labAuthors, "pi", false) : [],
       links: kind === "links" ? await loadLinks(ctx) : [],
+      resourceGroups: kind === "resources" ? await loadResourceGroups(ctx) : [],
       gallery: kind === "gallery" ? await loadGallery(ctx) : [],
       albums: kind === "gallery" ? await loadAlbums(ctx) : [],
       rosters: await loadRosters(ctx),
@@ -935,6 +1123,8 @@ export async function loadSite(options: {
     pages.push(page);
     if (page.stories.length > 0) storySources.push({ relDir, stories: page.stories });
   }
+
+  warnings.push(...files.warnings);
 
   resolveCitedPapers(pages, storySources, warnings);
 

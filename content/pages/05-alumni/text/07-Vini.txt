@@ -3,3 +3,4 @@ role: DBT-Women Scientist
 year: 2024
 thesis: Finding novel targets in triple-negative breast cancer
 now: DBT Ramalingaswami Fellow at SCTIMT, Thiruvananthapuram
+linkedin: https://www.linkedin.com/in/vini-ravindran-phd-17977415/

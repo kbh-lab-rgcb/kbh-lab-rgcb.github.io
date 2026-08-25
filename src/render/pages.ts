@@ -6,7 +6,16 @@
  */
 
 import { esc, join } from "../html.ts";
-import type { Album, GalleryItem, Member, Page, Site } from "../content/types.ts";
+import type {
+  Album,
+  GalleryItem,
+  Member,
+  Page,
+  PublicationYear,
+  ResourceGroup,
+  ResourceItem,
+  Site,
+} from "../content/types.ts";
 import {
   alumnusCard,
   emptyNote,
@@ -524,35 +533,82 @@ function renderAlumni(page: Page, depth: number, folder: string): string {
 
 /* ----------------------------------------------------------- Publications */
 
+/** One year of papers: the heading and the list under it. */
+function pubYearBlock(group: PublicationYear, level: 2 | 3 = 2): string {
+  return join([
+    `<div class="pub-year"${reveal()}>`,
+    `<h${level} class="pub-year__label">${esc(group.year)}</h${level}>`,
+    '<ul class="pub-list">',
+    group.items
+      .map(
+        (item) =>
+          `<li class="pub"><p class="pub__citation">${item.html}</p>${linkList(item.links, "pub__links")}</li>`,
+      )
+      .join(""),
+    "</ul>",
+    "</div>",
+  ]);
+}
+
+/**
+ * The lab's own papers, then the PI's other work below them.
+ *
+ * The two lists come from two folders and are counted separately, because
+ * "how much has this lab published" and "what has the PI put his name to" are
+ * different questions and one number cannot answer both. The second list is
+ * collapsed: it is longer than the first and it is not what most readers came
+ * for, but it is one click away rather than missing.
+ */
 function renderPublications(page: Page, depth: number, folder: string): string {
-  if (page.publicationYears.length === 0) {
+  const total = page.publicationYears.reduce((count, year) => count + year.items.length, 0);
+  const piTotal = page.piPublicationYears.reduce((count, year) => count + year.items.length, 0);
+
+  if (total === 0 && piTotal === 0) {
     return `<section class="section"><div class="container">${emptyNote(
       "Add papers by creating one file per year in",
       `${folder}/years/2026.txt`,
     )}</div></section>`;
   }
 
+  const piTitle =
+    page.fields.pititle || "Other publications from the principal investigator";
+  const piLead =
+    page.fields.pilead ||
+    "Work from before the laboratory was established, and studies guided or " +
+      "co-authored elsewhere. These are not counted as the laboratory's own output.";
+
   return join([
     introBlock(page, depth),
     '<section class="section"><div class="container">',
-    page.publicationYears
-      .map((group) =>
-        join([
-          `<div class="pub-year"${reveal()}>`,
-          `<h2 class="pub-year__label">${esc(group.year)}</h2>`,
-          '<ul class="pub-list">',
-          group.items
-            .map(
-              (item) =>
-                `<li class="pub"><p class="pub__citation">${item.html}</p>${linkList(item.links, "pub__links")}</li>`,
-            )
-            .join(""),
-          "</ul>",
-          "</div>",
-        ]),
-      )
-      .join(""),
+    total > 0
+      ? join([
+          sectionHead({
+            eyebrow: "From the laboratory",
+            title: `${total} paper${total === 1 ? "" : "s"}`,
+            lead: page.fields.lablead || "Papers with laboratory members among the authors.",
+          }),
+          page.publicationYears.map((group) => pubYearBlock(group)).join(""),
+        ])
+      : emptyNote("Add the laboratory's own papers to", `${folder}/years/2026.txt`),
     "</div></section>",
+
+    piTotal > 0
+      ? join([
+          '<section class="section section--sunken"><div class="container">',
+          `<details class="pub-aside"${reveal()}>`,
+          '<summary class="pub-aside__summary">',
+          `<span class="pub-aside__title">${esc(piTitle)}</span>`,
+          `<span class="pub-aside__count">${piTotal}</span>`,
+          icons.chevronRight,
+          "</summary>",
+          `<div class="pub-aside__body">`,
+          `<p class="section__lead">${esc(piLead)}</p>`,
+          page.piPublicationYears.map((group) => pubYearBlock(group, 3)).join(""),
+          "</div>",
+          "</details>",
+          "</div></section>",
+        ])
+      : "",
   ]);
 }
 
@@ -747,6 +803,76 @@ function renderLinks(page: Page, depth: number, folder: string): string {
   ]);
 }
 
+/* ------------------------------------------------------------- Resources */
+
+/**
+ * One repository or code block as a card.
+ *
+ * The card links to the item's own page rather than straight out to GitHub,
+ * because the page is where the explanation lives — what it does, what it
+ * needs, how to run it — and that is the thing this section exists to add on
+ * top of a bare repository listing.
+ */
+function resourceCard(item: ResourceItem, depth: number, index: number): string {
+  const files = item.downloads.length;
+  const meta = [
+    item.language,
+    files > 0 ? `${files} file${files === 1 ? "" : "s"}` : "",
+    item.repo ? "repository" : "",
+  ].filter(Boolean);
+
+  return join([
+    `<article class="card card--link resource-card"${reveal(index)}>`,
+    `<p class="resource-card__icon" aria-hidden="true">${item.repo && files === 0 ? icons.repo : icons.code}</p>`,
+    `<h3 class="card__title"><a href="${esc(rel(depth, item.path))}">${esc(item.title)}</a></h3>`,
+    item.summary ? `<p class="card__body">${esc(item.summary)}</p>` : "",
+    meta.length > 0
+      ? `<p class="card__meta"><span>${meta.map((part) => esc(part)).join(" · ")}</span></p>`
+      : "",
+    "</article>",
+  ]);
+}
+
+/**
+ * The Resources landing page: every branch, with its items under it.
+ *
+ * Branches are rendered in folder order and named by their own folders, so the
+ * page grows a section the day somebody adds one — the two the lab started
+ * with are not special-cased anywhere.
+ */
+function renderResources(page: Page, depth: number, folder: string): string {
+  if (page.resourceGroups.length === 0) {
+    return join([
+      introBlock(page, depth),
+      `<section class="section"><div class="container">${emptyNote(
+        "Add a repository or a code block by creating a folder in",
+        `${folder}/1-repositories/01-my-repo/item.txt`,
+      )}</div></section>`,
+    ]);
+  }
+
+  return join([
+    introBlock(page, depth),
+    page.resourceGroups
+      .map((group, index) =>
+        join([
+          `<section class="section${index % 2 === 1 ? " section--sunken" : ""}" id="${esc(group.slug)}">`,
+          '<div class="container">',
+          sectionHead({
+            eyebrow: `${group.items.length} item${group.items.length === 1 ? "" : "s"}`,
+            title: group.title,
+            lead: group.lead,
+          }),
+          '<div class="grid grid--cards">',
+          group.items.map((item, i) => resourceCard(item, depth, i)).join(""),
+          "</div>",
+          "</div></section>",
+        ]),
+      )
+      .join(""),
+  ]);
+}
+
 /* --------------------------------------------------------------- Dispatch */
 
 export function renderPageBody(site: Site, page: Page, depth: number): string {
@@ -766,6 +892,8 @@ export function renderPageBody(site: Site, page: Page, depth: number): string {
       return renderContact(site, page, depth);
     case "links":
       return renderLinks(page, depth, folder);
+    case "resources":
+      return renderResources(page, depth, folder);
     default:
       return renderSectionsPage(page, depth, folder);
   }
