@@ -3,6 +3,11 @@ role: PhD Student
 focus: Obesity-driven pancreatic cancer
 profile: yes
 papers: 10.1016/j.jare.2023.12.013, 10.1016/j.plipres.2023.101251
+orcid: https://orcid.org/0000-0002-5682-5170
+scholar: https://scholar.google.com/citations?user=lwKlI8EAAAAJ&hl=en
+researchgate: https://www.researchgate.net/profile/Arun-Viswanathan
+github: https://github.com/arunviswanathan91
+linkedin: https://www.linkedin.com/in/arungeethaviswanathan/
 
 Arun studies how the metabolic state of the host shapes pancreatic tumours,
 asking how obesity reshapes the tumour microenvironment and the immune response
