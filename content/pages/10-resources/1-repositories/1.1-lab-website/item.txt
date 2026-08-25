@@ -17,13 +17,21 @@ the whole thing fits together.
 Node — version 22.6 or newer
 Git — only if you want to work on it locally rather than through GitHub
 
-## Running it locally
+## The commands
 
-git clone https://github.com/kbh-lab-rgcb/kbh-lab-rgcb.github.io.git
 npm install — installs the three build dependencies
-npm run dev — serves the site at localhost:4321 and reloads as you edit
+npm run dev — serves the site locally and reloads as you edit
 npm run build — writes the finished site into docs/
 npm run check — reports anything in content/ that looks wrong
+
+## Running it locally
+
+```sh
+git clone https://github.com/kbh-lab-rgcb/kbh-lab-rgcb.github.io.git
+cd kbh-lab-rgcb.github.io
+npm install
+npm run dev
+```
 
 ## Editing without any of that
 

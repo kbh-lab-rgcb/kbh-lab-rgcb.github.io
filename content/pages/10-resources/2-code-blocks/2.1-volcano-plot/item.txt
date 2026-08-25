@@ -7,33 +7,42 @@ A starting point rather than a finished figure. It takes the data frame that
 labels the genes furthest out in each direction, and writes a PDF sized for a
 single-column figure.
 
-Everything you are likely to want to change — the cutoffs, how many genes get
+Everything you are likely to want to change — the cutoffs, how many genes are
 labelled, the colours, the output size — sits in the settings block at the top,
 so the rest can usually be left alone.
 
 ## Requirements
 
 R — 4.2 or newer
-ggplot2 — the plot itself
+ggplot2 — draws the plot
 ggrepel — keeps the gene labels from sitting on top of each other
-
-Install both with: install.packages(c("ggplot2", "ggrepel"))
-
-## How to run it
-
-Save your DESeq2 table with write.csv(as.data.frame(res), "results.csv")
-Put volcano_plot.R next to it
-Open the settings block and set input_file to your file name
-Run: Rscript volcano_plot.R
-
-It writes volcano.pdf into the same folder and prints how many genes passed the
-cutoff in each direction.
 
 ## The columns it expects
 
 log2FoldChange — as named by DESeq2
 padj — the adjusted p-value, also as named by DESeq2
-gene — the gene name; if your table has them as row names, the script picks
-  them up from there instead
+gene — the gene name, or the table's row names if there is no such column
 
-An edgeR or limma table works too once those three columns are named to match.
+An edgeR or limma table works once those three are named to match.
+
+## How to run it
+
+Install the two packages, if you have not already:
+
+```r
+install.packages(c("ggplot2", "ggrepel"))
+```
+
+Export your results and run the script beside them:
+
+```r
+write.csv(as.data.frame(res), "results.csv")
+```
+
+```sh
+Rscript volcano_plot.R
+```
+
+It writes `volcano.pdf` into the same folder and prints how many genes passed
+the cutoff in each direction. To point it at a different file, change
+`input_file` at the top.
