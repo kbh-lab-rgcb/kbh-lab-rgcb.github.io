@@ -3,11 +3,14 @@ role: Scientist F · Principal Investigator
 email: harikumar@rgcb.res.in
 focus: Sphingolipid signalling in inflammation, immunity and cancer
 profile: yes
+orcid: https://orcid.org/0000-0002-1763-4179
+scholar: https://scholar.google.com/citations?user=0-6vGiYAAAAJ&hl=en
+researchgate: https://www.researchgate.net/profile/Kuzhuvelil-Harikumar
+linkedin: https://www.linkedin.com/in/harikumarkb
+Scopus: https://www.scopus.com/authid/detail.uri?authorId=23667640200
+Harikumar leads the laboratory's work on the role of inflammation in physiology, the innate immune response, and in pathophysiology, principally cancer.
 
-Harikumar leads the laboratory's work on the role of inflammation in physiology; the innate immune response - and in pathophysiology, principally cancer.
-
-He took his PhD in Biochemistry at Amala Cancer Research Centre, Thrissur, in 2008, after an MSc from Nagpur University. He was a research intern at the UT MD Anderson Cancer Center and a post-doctoral associate at Virginia Commonwealth University before returning to India as a DBT Ramalingaswami Fellow. He has been at BRIC-RGCB since, as Scientist C, Scientist E-I, E-II and now
-Scientist F.
+He took his PhD in Biochemistry at Amala Cancer Research Center, Thrissur, in 2008, after an MSc from Nagpur University. He was a research intern at the UT MD Anderson Cancer Center and a post-doctoral associate at Virginia Commonwealth University before returning to India as a DBT Ramalingaswami Fellow. He has been at BRIC-RGCB since, as Scientist C, Scientist E-I, E-II, and now Scientist F.
 
 He is a member of the Indian Association for Cancer Research, the American
 Association of Indian Scientists in Cancer Research, and the European Federation

@@ -227,7 +227,8 @@ export type PageKind =
   | "publications"
   | "gallery"
   | "contact"
-  | "links";
+  | "links"
+  | "resources";
 
 /** One line of a roster: a person and where they came from. */
 export type RosterEntry = {
@@ -243,6 +244,79 @@ export type RosterEntry = {
 export type Roster = {
   title: string;
   entries: RosterEntry[];
+};
+
+/**
+ * One file a reader can download from a resource item.
+ *
+ * The file is copied out of `content/` verbatim under its own name, because a
+ * hashed filename in the Downloads folder is useless to someone who has just
+ * fetched three analysis scripts and wants to know which is which.
+ */
+export type Download = {
+  /** Path relative to the site root, e.g. `assets/resources/code-blocks/deseq2/run.R`. */
+  src: string;
+  /** The filename as the editor wrote it, e.g. `run.R`. */
+  name: string;
+  /** Lowercase extension without the dot, e.g. `r`, `ipynb`, `py`. */
+  ext: string;
+  /** Size in bytes, shown next to the download so nobody is surprised. */
+  bytes: number;
+  /**
+   * The file's own text, when it is small enough and plainly textual. Shown
+   * on the page so a reader can judge a script before downloading it. Empty
+   * for notebooks, archives and anything binary or oversized.
+   */
+  preview: string;
+};
+
+/**
+ * One repository or code block: a folder with an `item.txt` in it.
+ *
+ * The folder is the whole authoring interface. Drop `03-coco-repo/` into
+ * `1-repositories/` and it becomes a card on the Resources page and a page of
+ * its own — no list to update anywhere else.
+ */
+export type ResourceItem = {
+  slug: string;
+  order: number;
+  title: string;
+  /** One-line summary for the card, from `summary:` or the first sentence. */
+  summary: string;
+  /** What it does / how to run it: the body of `item.txt`, as HTML. */
+  html: string;
+  text: string;
+  /**
+   * The repository this item lives in, when there is one. A code block may
+   * carry one too — a script pulled out of a repo is still worth linking back.
+   */
+  repo: ProfileLink | null;
+  /** Any other links given in the header: `doi:`, `docs:`, `paper:`, `url:`. */
+  links: ProfileLink[];
+  /** Free-text line under the title, from `language:` — `R`, `Python`, … */
+  language: string;
+  /** Files in the item's folder, offered for download. */
+  downloads: Download[];
+  /** `## Heading` blocks, rendered in order below the body. */
+  sections: ProfileSection[];
+  /** Where this item's page lives, e.g. `resources/code-blocks/deseq2/`. */
+  path: string;
+  fields: Record<string, string>;
+};
+
+/**
+ * A branch of the Resources page: one subfolder holding items.
+ *
+ * Repositories and code blocks are the two the lab started with, but nothing
+ * here names them — a third folder becomes a third branch with no code change.
+ */
+export type ResourceGroup = {
+  slug: string;
+  order: number;
+  title: string;
+  /** Shown under the heading, from `group.txt`. */
+  lead: string;
+  items: ResourceItem[];
 };
 
 export type Page = {
@@ -265,7 +339,17 @@ export type Page = {
   stories: Story[];
   members: Member[];
   publicationYears: PublicationYear[];
+  /**
+   * Papers the PI is on that are not the lab's own work — his doctoral and
+   * post-doctoral years, and the studies he has guided or collaborated on
+   * elsewhere. Kept apart from `publicationYears` so the lab's own output can
+   * be counted and read on its own, and maintained in its own folder so
+   * moving a paper between the two is a matter of moving a paragraph.
+   */
+  piPublicationYears: PublicationYear[];
   links: LinkItem[];
+  /** Branches of a Resources page: repositories, code blocks, anything else. */
+  resourceGroups: ResourceGroup[];
   gallery: GalleryItem[];
   /** Photo albums from subfolders of `photos/`, shown as stacks. */
   albums: Album[];

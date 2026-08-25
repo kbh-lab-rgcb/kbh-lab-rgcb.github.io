@@ -12,6 +12,7 @@ import { existsSync } from "node:fs";
 import { readFile, readdir } from "node:fs/promises";
 import { basename, extname, join } from "node:path";
 import { esc } from "../html.ts";
+import { createFilePipeline, type FilePipeline } from "./files.ts";
 import { createImagePipeline, IMAGE_EXTENSIONS, listImages } from "./images.ts";
 import {
   excerpt,
@@ -41,6 +42,8 @@ import type {
   PageKind,
   Publication,
   PublicationYear,
+  ResourceGroup,
+  ResourceItem,
   Roster,
   RosterEntry,
   Section,
@@ -60,7 +63,9 @@ const KIND_RULES: [RegExp, PageKind][] = [
   [/publication|papers/, "publications"],
   [/gallery|photos|album/, "gallery"],
   [/contact|reach|find-us/, "contact"],
-  [/link|resource|outreach|elsewhere/, "links"],
+  // Before the links rule, which would otherwise swallow `10-resources`.
+  [/resource|download|toolkit|code|repo/, "resources"],
+  [/link|outreach|elsewhere/, "links"],
 ];
 
 function kindFor(slug: string): PageKind {
@@ -169,6 +174,7 @@ type Ctx = {
   relDir: string;
   slug: string;
   images: Awaited<ReturnType<typeof createImagePipeline>>;
+  files: FilePipeline;
   warnings: Warning[];
 };
 
@@ -517,12 +523,34 @@ async function loadMembers(
   return members;
 }
 
-async function loadPublications(ctx: Ctx, labAuthors: string[]): Promise<PublicationYear[]> {
+/**
+ * One folder of `YYYY.txt` files.
+ *
+ * Called twice: once for `years/`, the lab's own papers, and once for `pi/`,
+ * the ones the PI is on that are not this lab's work. Two folders rather than
+ * a flag inside the files because the question "is this ours?" is answered by
+ * moving a paragraph between two files, which is the one editing operation
+ * everybody can already do.
+ *
+ * @param folder Subfolder to read, e.g. `years`.
+ * @param loose Whether to fall back to the page folder itself when the
+ *   subfolder is missing. True only for `years/`: without it a page that has
+ *   no `pi/` folder would read every citation twice.
+ */
+async function loadPublications(
+  ctx: Ctx,
+  labAuthors: string[],
+  folder: string,
+  loose: boolean,
+): Promise<PublicationYear[]> {
   // `years/` is the documented home, but tolerate files sitting directly in the
   // page folder too — an editor who drops `2025.txt` one level up still works.
-  const yearsDir = existsSync(join(ctx.pageDir, "years"))
-    ? join(ctx.pageDir, "years")
-    : ctx.pageDir;
+  const yearsDir = existsSync(join(ctx.pageDir, folder))
+    ? join(ctx.pageDir, folder)
+    : loose
+      ? ctx.pageDir
+      : "";
+  if (!yearsDir) return [];
   const files = (await listTextFiles(yearsDir)).filter((file) => /\d{4}/.test(file));
 
   const groups: PublicationYear[] = [];
@@ -543,7 +571,7 @@ async function loadPublications(ctx: Ctx, labAuthors: string[]): Promise<Publica
 
     if (items.length === 0) {
       ctx.warnings.push({
-        file: `${ctx.relDir}/years/${file}`,
+        file: `${ctx.relDir}/${folder}/${file}`,
         message: "No publications were found in this file.",
         fallback: "The year was left out. Put one citation per paragraph.",
       });
