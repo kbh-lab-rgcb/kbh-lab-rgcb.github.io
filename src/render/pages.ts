@@ -599,7 +599,6 @@ function renderPublications(page: Page, depth: number, folder: string): string {
           '<summary class="pub-aside__summary">',
           `<span class="pub-aside__title">${esc(piTitle)}</span>`,
           `<span class="pub-aside__count">${piTotal}</span>`,
-          icons.chevronRight,
           "</summary>",
           `<div class="pub-aside__body">`,
           `<p class="section__lead">${esc(piLead)}</p>`,
@@ -815,10 +814,18 @@ function renderLinks(page: Page, depth: number, folder: string): string {
  */
 function resourceCard(item: ResourceItem, depth: number, index: number): string {
   const files = item.downloads.length;
+  let host = "";
+  if (item.repo) {
+    try {
+      host = new URL(item.repo.url).hostname.replace(/^www\./, "");
+    } catch {
+      host = "";
+    }
+  }
   const meta = [
     item.language,
     files > 0 ? `${files} file${files === 1 ? "" : "s"}` : "",
-    item.repo ? "repository" : "",
+    host,
   ].filter(Boolean);
 
   return join([

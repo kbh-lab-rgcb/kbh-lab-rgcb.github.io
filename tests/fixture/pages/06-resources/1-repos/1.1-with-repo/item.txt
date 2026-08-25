@@ -1,0 +1,7 @@
+title: A repository with no files
+repo: fixture-org/fixture-repo
+docs: https://example.org/docs
+language: Python
+summary: Links out and carries nothing to download.
+
+Body prose for the repository item.

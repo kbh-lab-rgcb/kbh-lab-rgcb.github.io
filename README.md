@@ -29,11 +29,13 @@ in it, which GitHub shows when you open the folder.
 | A page's banner (2+ images = slideshow) | `content/pages/<page>/banner/` |
 | Lab members | `content/pages/04-team/photos/` + `text/` (same filename) |
 | Alumni | `content/pages/05-alumni/text/` |
-| Publications | `content/pages/06-publications/years/2026.txt` |
+| Publications (the lab's own) | `content/pages/06-publications/years/2026.txt` |
+| Publications (the PI's other work) | `content/pages/06-publications/pi/2026.txt` |
 | Gallery | `content/pages/07-gallery/photos/` |
 | Photo albums | `content/pages/07-gallery/photos/<album-name>/` |
 | A person's own page | `profile: yes` in their file in `content/pages/04-team/text/` |
 | Outgoing links | `content/pages/09-links/links/` |
+| Code and repositories | `content/pages/10-resources/<branch>/<item>/` |
 
 One folder under `content/pages/` = one page = one item in the navigation. Add a
 folder to add a page.

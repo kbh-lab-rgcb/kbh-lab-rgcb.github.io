@@ -222,6 +222,67 @@ Author A, Author B, Harikumar KB. Title of the paper. Journal Name.
 The DOI and PubMed buttons appear on their own. If you do not have an
 identifier, leave it out — the paper still lists, just without a button.
 
+**Which folder?** `years/` is for papers with **a lab member among the authors**
+— current people or alumni. Everything else the PI has published goes in
+`content/pages/06-publications/pi/`: his doctoral and post-doctoral work, and
+studies he has guided or co-authored in someone else's group.
+
+Both lists appear on the Publications page — the lab's own first, the rest in a
+panel below it that opens with a click. **The number on the home page counts
+`years/` only.** To move a paper from one list to the other, cut the paragraph
+and paste it into the file for the same year in the other folder.
+
+### Share a code file or a repository
+
+Everything lives under `content/pages/10-resources/`, and **one folder is one
+entry**:
+
+```
+10-resources/
+  1-repositories/
+    1.1-lab-website/
+      item.txt
+  2-code-blocks/
+    2.1-volcano-plot/
+      item.txt
+      volcano_plot.R
+```
+
+To add a new one, create a folder in the branch it belongs to — say
+`2-code-blocks/2.3-pca-script/` — put your script in it, and write an `item.txt`
+beside it:
+
+```text
+title: PCA of expression data
+language: R
+summary: One line, shown on the card.
+
+A paragraph on what it does.
+
+## Requirements
+
+R — 4.2 or newer
+ggplot2 — draws the plot
+
+## How to run it
+
+Whatever someone needs to type, in the order they need to type it.
+```
+
+That is all. The card, the page and the download button follow from the folder
+being there.
+
+- **Every file in the folder becomes a download**, under its own name. Scripts
+  and notebooks are also shown on the page so people can read them first.
+- **A code block can point at a repository too** — add `repo: owner/name` and a
+  button appears next to the files.
+- **Numbering.** `1.1-`, `2.3-`: the first number is the branch, the second is
+  the position in it. Plain `01-` works the same way.
+- **A new branch** is just another folder — `3-datasets/` with a `group.txt`
+  becomes a third heading on the page.
+
+Longer notes are in `content/pages/10-resources/README.md`.
+
 ### Change a page's banner
 
 Put an image in that page's `banner/` folder. One image gives a still banner;

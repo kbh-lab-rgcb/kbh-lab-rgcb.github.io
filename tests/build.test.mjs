@@ -52,7 +52,7 @@ after(async () => {
 /* ------------------------------------------------------- Pages and shell */
 
 test("every page folder produces a page, with home at the root", () => {
-  assert.equal(realResult.pageCount, 9);
+  assert.equal(realResult.pageCount, 10);
   for (const slug of [
     "index.html",
     "research/index.html",
@@ -62,6 +62,7 @@ test("every page folder produces a page, with home at the root", () => {
     "publications/index.html",
     "gallery/index.html",
     "contact/index.html",
+    "resources/index.html",
     "links/index.html",
   ]) {
     assert.ok(real[slug], `expected ${slug} to be generated`);
@@ -401,7 +402,7 @@ test("lab authors are bolded in citations and others are not", () => {
 test("every real publication renders, and the ones with identifiers link out", () => {
   const html = real["publications/index.html"];
   const papers = realResult.site.pages
-    .flatMap((page) => page.publicationYears)
+    .flatMap((page) => [...page.publicationYears, ...page.piPublicationYears])
     .flatMap((group) => group.items);
 
   assert.ok(papers.length > 0, "the publications page should carry papers");
@@ -425,7 +426,116 @@ test("a citation ending in a plain web address builds and links out", () => {
   assert.ok(!html.includes("2025. URL"));
 });
 
+/* ------------------------------------------ Lab papers vs the PI's own */
+
+/*
+ * The whole point of the two folders: one number that means "what this lab has
+ * published" and a second list that does not inflate it. Counted from the
+ * content on both sides, so moving a paper between the folders moves the test
+ * with it rather than breaking it.
+ */
+test("the PI's other papers are listed apart from the lab's own and not counted with them", () => {
+  const page = realResult.site.pages.find((p) => p.kind === "publications");
+  const count = (years) => years.reduce((total, year) => total + year.items.length, 0);
+  const lab = count(page.publicationYears);
+  const pi = count(page.piPublicationYears);
+
+  assert.ok(lab > 0, "the lab should have papers of its own");
+  assert.ok(pi > 0, "the PI should have papers outside the lab's own list");
+
+  // The home page's headline figure is the lab's own work, not the total.
+  assert.match(real["index.html"], new RegExp(`>${lab}</p><p class="stat__label">Selected publications`));
+  assert.ok(!real["index.html"].includes(`>${lab + pi}</p><p class="stat__label">Selected publications`));
+
+  // Both lists are on the publications page; only one of them is counted in
+  // the heading above it.
+  const html = real["publications/index.html"];
+  assert.equal((html.match(/<li class="pub">/g) ?? []).length, lab + pi);
+  assert.match(html, new RegExp(`<h2>${lab} papers?</h2>`));
+  assert.match(html, new RegExp(`class="pub-aside__count">${pi}<`));
+});
+
+test("a publications page with no pi folder is unchanged, and one with a pi folder gains a list", () => {
+  const page = fixtureResult.site.pages.find((p) => p.kind === "publications");
+  assert.equal(page.piPublicationYears.length, 1);
+  assert.match(fixture["publications/index.html"], /A paper from before the lab existed/);
+  // The loose-file fallback for `years/` must not also swallow the pi folder.
+  const labCitations = page.publicationYears.flatMap((y) => y.items).map((i) => i.citation);
+  assert.ok(!labCitations.some((c) => c.includes("before the lab existed")));
+});
+
+/* --------------------------------------------------------- Resources */
+
+test("a folder in a resource branch becomes a card and a page of its own", () => {
+  const page = fixtureResult.site.pages.find((p) => p.kind === "resources");
+  assert.equal(page.resourceGroups.length, 2);
+  assert.deepEqual(
+    page.resourceGroups.map((group) => group.slug),
+    ["repos", "code"],
+  );
+
+  // `2.1-` orders inside the branch and does not leak into the address.
+  const code = page.resourceGroups[1];
+  assert.deepEqual(
+    code.items.map((item) => item.path),
+    ["resources/code/described/", "resources/code/undescribed/"],
+  );
+
+  assert.ok(fixture["resources/index.html"].includes("A described code block"));
+  assert.ok(fixture["resources/code/described/index.html"]);
+  assert.match(fixture["resources/code/described/index.html"], /What it does\./);
+  // Its `## Requirements` block is a two-column list, like a CV section.
+  assert.match(fixture["resources/code/described/index.html"], /<dt class="cv__term">R<\/dt>/);
+});
+
+test("every file in an item folder is downloadable under its own name", async () => {
+  const page = fixtureResult.site.pages.find((p) => p.kind === "resources");
+  const item = page.resourceGroups[1].items[0];
+
+  assert.deepEqual(
+    item.downloads.map((file) => file.name),
+    ["run.R", "scripts/qc.R"],
+  );
+  // The file that describes the item is not part of it, and neither is the
+  // README that tells an editor what to put in the folder.
+  assert.ok(!item.downloads.some((file) => /item\.txt|README/i.test(file.name)));
+
+  for (const file of item.downloads) {
+    assert.ok(existsSync(join(fixtureOut, file.src)), `${file.src} should have been copied`);
+  }
+  // A nested folder keeps its shape rather than collapsing into a flat pile.
+  assert.ok(existsSync(join(fixtureOut, "assets/resources/code/described/scripts/qc.R")));
+
+  const html = fixture["resources/code/described/index.html"];
+  assert.match(html, /href="\.\.\/\.\.\/\.\.\/assets\/resources\/code\/described\/run\.R" download/);
+});
+
+test("a script is shown on the page as well as offered for download", () => {
+  const html = fixture["resources/code/described/index.html"];
+  assert.match(html, /<pre class="code-block__body"><code>x &lt;- 1/);
+  assert.match(html, /data-copy/);
+});
+
+test("an item with no item.txt still gets a page, and says so in a warning", () => {
+  const html = fixture["resources/code/undescribed/index.html"];
+  assert.ok(html, "the folder should still produce a page");
+  assert.match(html, /orphan\.R/);
+  assert.ok(
+    fixtureResult.warnings.some((warning) => /has no `item\.txt`/.test(warning.message)),
+    "the editor should be told what is missing",
+  );
+});
+
+test("a repository with nothing to download renders no Files section", () => {
+  const html = fixture["resources/repos/with-repo/index.html"];
+  assert.ok(!html.includes("download-list"), "no file list where there are no files");
+  assert.ok(!html.includes("code-block__body"), "and no empty code block either");
+  assert.match(html, /href="https:\/\/github\.com\/fixture-org\/fixture-repo"/);
+  assert.match(html, /href="https:\/\/example\.org\/docs"/);
+});
+
 /* ----------------------------------------------- Only-if-added: stories */
+
 
 test("a section with no story lines gets no story markup at all", () => {
   const html = real["research/index.html"];

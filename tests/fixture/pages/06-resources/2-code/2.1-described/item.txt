@@ -1,0 +1,10 @@
+title: A described code block
+repo: https://github.com/fixture-org/other
+language: R
+summary: Has a repo and files at once.
+
+What it does.
+
+## Requirements
+
+R — 4.2 or newer

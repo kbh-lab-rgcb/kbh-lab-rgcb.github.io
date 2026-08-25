@@ -1453,3 +1453,327 @@
 .empty-note code {
   background: var(--bg);
 }
+
+/* ------------------------------------- The PI's other publications */
+
+/*
+ * A `<details>`, like the alumni rosters, and for the same reasons: it opens
+ * with JavaScript switched off, it is keyboard operable for free, and
+ * find-in-page opens it to reveal a match inside. Closed by default because
+ * this list is longer than the lab's own and is not what most readers came
+ * for — but it is one click away rather than missing.
+ */
+.pub-aside {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  transition: border-color var(--transition), box-shadow var(--transition);
+}
+
+.pub-aside[open] {
+  border-color: var(--border-strong);
+  box-shadow: var(--shadow-sm);
+}
+
+.pub-aside__summary {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-5);
+  cursor: pointer;
+  list-style: none; /* Safari shows its own triangle without this. */
+  border-radius: var(--radius);
+  transition: background var(--transition), color var(--transition);
+}
+
+.pub-aside__summary::-webkit-details-marker {
+  display: none;
+}
+
+.pub-aside__summary:hover {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.pub-aside__summary::after {
+  content: "";
+  width: 0.5rem;
+  height: 0.5rem;
+  margin-left: auto;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: rotate(45deg) translate(-2px, -2px);
+  transition: transform var(--transition);
+  opacity: 0.6;
+}
+
+.pub-aside[open] .pub-aside__summary::after {
+  transform: rotate(-135deg);
+}
+
+.pub-aside__title {
+  font-size: var(--text-lg);
+  font-weight: 650;
+}
+
+.pub-aside__count {
+  padding: 0.1rem 0.5rem;
+  border-radius: var(--radius-full);
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: var(--text-xs);
+  font-weight: 700;
+}
+
+.pub-aside__body {
+  padding: 0 var(--space-5) var(--space-5);
+}
+
+.pub-aside__body .section__lead {
+  margin-bottom: var(--space-6);
+}
+
+/* --------------------------------------------------------- Resources */
+
+.resource-card {
+  gap: var(--space-3);
+}
+
+/*
+ * The icon says which of the two kinds this is at a glance — a whole
+ * repository, or a script you can read on the page — before the reader has
+ * got as far as the title.
+ */
+.resource-card__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: var(--radius);
+  background: var(--accent-soft);
+  color: var(--accent);
+  margin: 0;
+}
+
+.resource-card__icon svg {
+  width: 1.125rem;
+  height: 1.125rem;
+}
+
+.resource__head {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  align-items: flex-start;
+  margin-bottom: var(--space-6);
+}
+
+.resource__language {
+  display: inline-flex;
+  padding: 0.15rem 0.6rem;
+  border-radius: var(--radius-full);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  margin: 0;
+}
+
+/* ---------------------------------------------------------- Downloads */
+
+.download-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+/*
+ * Name and size on the left, the button on the right, and the row wraps
+ * rather than squeezing the button off the edge on a phone.
+ */
+.download {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  padding: var(--space-3) var(--space-4);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  transition: border-color var(--transition), box-shadow var(--transition);
+}
+
+.download:hover {
+  border-color: var(--border-strong);
+  box-shadow: var(--shadow-sm);
+}
+
+.download__icon {
+  display: inline-flex;
+  color: var(--text-faint);
+  flex: none;
+}
+
+.download__icon svg {
+  width: 1.125rem;
+  height: 1.125rem;
+}
+
+.download__text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  min-width: 0;
+  flex: 1 1 12rem;
+}
+
+.download__name {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  word-break: break-all;
+}
+
+.download__meta {
+  color: var(--text-muted);
+  font-size: var(--text-xs);
+}
+
+.download__action {
+  margin-left: auto;
+  flex: none;
+}
+
+.download-list__total {
+  margin-top: var(--space-3);
+  color: var(--text-faint);
+  font-size: var(--text-xs);
+}
+
+.button--small {
+  padding: var(--space-2) var(--space-4);
+  font-size: var(--text-xs);
+}
+
+.button--small svg {
+  width: 0.9rem;
+  height: 0.9rem;
+}
+
+/* --------------------------------------------------------- Code blocks */
+
+.code-block {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  overflow: hidden;
+}
+
+.code-block__head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-sunken);
+}
+
+.code-block__name {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  word-break: break-all;
+}
+
+.code-block__lang {
+  color: var(--text-faint);
+  font-size: var(--text-xs);
+}
+
+.code-block__copy {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 0.25rem 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface-raised);
+  color: var(--text-muted);
+  font: inherit;
+  font-size: var(--text-xs);
+  font-weight: 600;
+  cursor: pointer;
+  flex: none;
+  transition: border-color var(--transition), color var(--transition);
+}
+
+.code-block__copy:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.code-block__copy svg {
+  width: 0.8rem;
+  height: 0.8rem;
+}
+
+/* Two labels in one button, one shown at a time, so the width never jumps. */
+.code-block__copy-idle,
+.code-block__copy-done {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.code-block__copy-done,
+.code-block__copy[data-copied] .code-block__copy-idle {
+  display: none;
+}
+
+.code-block__copy[data-copied] .code-block__copy-done {
+  display: inline-flex;
+  color: var(--accent);
+}
+
+/*
+ * A long script scrolls inside its own box, in both directions. Capping the
+ * height is what keeps a three-hundred-line file from burying the rest of the
+ * page; the whole thing is a download away regardless.
+ */
+.code-block__body {
+  margin: 0;
+  padding: var(--space-4);
+  max-height: 32rem;
+  overflow: auto;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  line-height: 1.6;
+  tab-size: 2;
+}
+
+/* Inside a block, `code` is the block — it needs none of the inline chrome. */
+pre code,
+.code-block__body code {
+  background: none;
+  border: 0;
+  padding: 0;
+  font-size: inherit;
+}
+
+/* Fenced code written in an editor's own prose gets the same treatment. */
+.prose pre {
+  margin: var(--space-4) 0;
+  padding: var(--space-4);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  overflow-x: auto;
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  line-height: 1.6;
+  tab-size: 2;
+}
