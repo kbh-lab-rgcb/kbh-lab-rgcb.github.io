@@ -1,0 +1,6 @@
+title: Resources
+tagline: Code and repositories from the laboratory, and the tools we rely on
+
+Everything here was written or assembled in the laboratory unless the page says
+otherwise. Each entry explains what it does, what it needs and how to run it,
+and every file on it can be downloaded directly.

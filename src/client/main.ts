@@ -360,6 +360,32 @@ function setupScroll(): void {
   update();
 }
 
+/* ------------------------------------------------------- Copy a code block */
+
+/**
+ * Copy the code above the button.
+ *
+ * Progressive, like everything else here: the button is only ever a
+ * convenience — the code is on the page to be read and selected, and the file
+ * itself is a download away — so a browser that refuses the clipboard just
+ * leaves the button saying "Copy".
+ */
+function setupCopy(): void {
+  for (const button of document.querySelectorAll<HTMLButtonElement>("[data-copy]")) {
+    button.addEventListener("click", async () => {
+      const code = button.closest(".code-block")?.querySelector("code")?.textContent ?? "";
+      if (!code) return;
+      try {
+        await navigator.clipboard.writeText(code);
+      } catch {
+        return;
+      }
+      button.dataset.copied = "true";
+      window.setTimeout(() => delete button.dataset.copied, 2000);
+    });
+  }
+}
+
 /* ------------------------------------------------------------------ Boot */
 
 function boot(): void {
@@ -373,6 +399,7 @@ function boot(): void {
   setupLightbox();
   setupReveal();
   setupScroll();
+  setupCopy();
 }
 
 if (document.readyState === "loading") {

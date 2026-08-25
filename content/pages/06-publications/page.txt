@@ -1,2 +1,2 @@
 title: Publications
-tagline: Papers from the laboratory and PI
+tagline: Papers from the laboratory, and the principal investigator's other work

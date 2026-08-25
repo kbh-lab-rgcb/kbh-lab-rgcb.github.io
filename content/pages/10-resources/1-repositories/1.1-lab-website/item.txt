@@ -1,0 +1,32 @@
+title: This website
+repo: https://github.com/kbh-lab-rgcb/kbh-lab-rgcb.github.io
+language: TypeScript · Node 22
+summary: The source of the site you are reading. Every page is a folder, and anyone in the lab can edit it from a browser.
+
+The site is built from plain text files under `content/`. There is no database,
+no admin login and no theme to configure: a page is a folder, a person is a text
+file next to a photograph, a paper is a paragraph in a file named after its year.
+Pushing a change to `main` rebuilds and republishes it within a couple of minutes.
+
+It is here because the same pattern works for any small lab site, and because
+anyone in the group who wants to change their own page should be able to see how
+the whole thing fits together.
+
+## Requirements
+
+Node — version 22.6 or newer
+Git — only if you want to work on it locally rather than through GitHub
+
+## Running it locally
+
+git clone https://github.com/kbh-lab-rgcb/kbh-lab-rgcb.github.io.git
+npm install — installs the three build dependencies
+npm run dev — serves the site at localhost:4321 and reloads as you edit
+npm run build — writes the finished site into docs/
+npm run check — reports anything in content/ that looks wrong
+
+## Editing without any of that
+
+Open the file on GitHub, press the pencil, type, and commit. EDITING.md in the
+repository walks through the common jobs — adding a person, adding a paper,
+adding a photograph — with nothing else assumed.

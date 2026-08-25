@@ -14,6 +14,17 @@ doi:10.2174/0109298673274796240116105555
 That is it. The year heading comes from the filename, and years are listed
 newest first automatically.
 
+## Only the laboratory's own papers
+
+This folder is for papers with **a member of this laboratory among the
+authors** — current people or alumni. Everything else the PI has published goes
+in [`../pi/`](../pi/): his doctoral and post-doctoral work, and studies he has
+guided or co-authored in someone else's group.
+
+The count on the home page and at the top of the Publications page comes from
+this folder alone. Moving a paper between the two folders is a matter of moving
+the paragraph.
+
 ## Linking to the paper
 
 Put any of these anywhere in the entry — usually at the end:

@@ -14,6 +14,7 @@ import type { Site, Warning } from "./content/types.ts";
 import { renderDocument } from "./render/layout.ts";
 import { descriptionFor, renderPageBody } from "./render/pages.ts";
 import { profileDescription, profileShell, renderProfileBody } from "./render/profile.ts";
+import { renderResourceBody, resourceDescription, resourceShell } from "./render/resource.ts";
 import { depthOf, outputPath } from "./render/url.ts";
 
 const STYLE_FILES = ["tokens.css", "base.css", "layout.css", "components.css"];
@@ -24,6 +25,8 @@ export type BuildResult = {
   pageCount: number;
   /** Personal pages written alongside them. Not part of `pageCount`. */
   profileCount: number;
+  /** Repository and code-block pages. Also not part of `pageCount`. */
+  resourceCount: number;
   ms: number;
 };
 
@@ -114,6 +117,30 @@ export async function buildSite(options: BuildOptions): Promise<BuildResult> {
     }
   }
 
+  // Every repository and code block gets a page of its own, for the same
+  // reason people do: the folder is the unit somebody adds, and the thing they
+  // wrote about it needs somewhere to live that is not a card.
+  let resourceCount = 0;
+  for (const page of site.pages) {
+    for (const group of page.resourceGroups) {
+      for (const item of group.items) {
+        const shell = resourceShell(page, group, item);
+        const depth = depthOf(shell);
+        const html = renderDocument({
+          site,
+          page: shell,
+          depth,
+          body: renderResourceBody(page, group, item, depth),
+          description: resourceDescription(item),
+        });
+        const target = join(outRoot, outputPath(shell));
+        await mkdir(dirname(target), { recursive: true });
+        await writeFile(target, html);
+        resourceCount += 1;
+      }
+    }
+  }
+
   await writeFile(join(outRoot, "styles.css"), await buildStyles(root));
   await writeFile(join(outRoot, "main.js"), await buildScript(root, liveReload));
 
@@ -130,6 +157,7 @@ export async function buildSite(options: BuildOptions): Promise<BuildResult> {
     warnings: site.warnings,
     pageCount: site.pages.length,
     profileCount,
+    resourceCount,
     ms: Date.now() - started,
   };
 }

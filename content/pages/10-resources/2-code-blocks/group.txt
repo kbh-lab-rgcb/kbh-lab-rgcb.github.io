@@ -1,0 +1,2 @@
+title: Code blocks
+tagline: Single scripts and notebooks: R, Python and the small pieces of analysis we reuse.

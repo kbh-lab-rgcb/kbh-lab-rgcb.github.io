@@ -1,0 +1,39 @@
+title: Volcano plot from DESeq2 results
+language: R
+summary: Turns a DESeq2 results table into a labelled volcano plot, with the thresholds and colours set in one block at the top.
+
+A starting point rather than a finished figure. It takes the data frame that
+`DESeq2::results()` gives you, applies a fold-change and adjusted-p cutoff,
+labels the genes furthest out in each direction, and writes a PDF sized for a
+single-column figure.
+
+Everything you are likely to want to change — the cutoffs, how many genes get
+labelled, the colours, the output size — sits in the settings block at the top,
+so the rest can usually be left alone.
+
+## Requirements
+
+R — 4.2 or newer
+ggplot2 — the plot itself
+ggrepel — keeps the gene labels from sitting on top of each other
+
+Install both with: install.packages(c("ggplot2", "ggrepel"))
+
+## How to run it
+
+Save your DESeq2 table with write.csv(as.data.frame(res), "results.csv")
+Put volcano_plot.R next to it
+Open the settings block and set input_file to your file name
+Run: Rscript volcano_plot.R
+
+It writes volcano.pdf into the same folder and prints how many genes passed the
+cutoff in each direction.
+
+## The columns it expects
+
+log2FoldChange — as named by DESeq2
+padj — the adjusted p-value, also as named by DESeq2
+gene — the gene name; if your table has them as row names, the script picks
+  them up from there instead
+
+An edgeR or limma table works too once those three columns are named to match.

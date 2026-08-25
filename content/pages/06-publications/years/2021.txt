@@ -1,7 +1,3 @@
-Kurani H, Razavipour SF, Harikumar KB, Dunworth M, Ewald AJ, Nasir A, Pearson G, Van Booven D, Zhou Z, Azzam D, Wahlestedt C, Slingerland J. DOT1L Is a novel cancer stem cell target for triple-negative breast cancer (2021). Clinical Cancer Research.28(9):1948-1965.
-
 James S, Aparna JS, Babu A, Paul AM, Lankadasari MB, Athira SR, Kumar SS, Vijayan Y, Namitha NN, Mohammed S, Reshmi G, Harikumar KB (2021). Cardamonin attenuates experimental colitis and associated colorectal cancer. Biomolecules.11(5):661. pmid:33947113 doi:10.3390/biom11050661
 
 Anu B, Namitha NN, Harikumar KB. S1PR1 signaling in cancer: A current perspective (2021). Advances in Protein Chemistry and Structural Biology. 125:259-274 (Highlighted in front cover page). pmid:33931142 doi:10.1016/bs.apcsb.2020.12.006
-
-Avni D, Harikumar KB, Sanyal AJ, Spiegel S (2021). Deletion or inhibition of SphK1 mitigates fulminant hepatic failure by suppressing TNFα-dependent inflammation and apoptosis. The FASEB Journal. 35(3):e21415.
