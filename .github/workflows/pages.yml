@@ -52,6 +52,19 @@ jobs:
       - name: Run tests
         run: npm test
 
+      - name: Check out the PDAC results atlas
+        uses: actions/checkout@v4
+        with:
+          repository: arunviswanathan91/models-obesity
+          ref: 2a8cc80bd0dd6381ce6c661078e9b2823b56ee89
+          path: atlas-source
+          persist-credentials: false
+
+      - name: Include the PDAC results atlas
+        run: |
+          mkdir -p docs/models-obesity
+          cp -R atlas-source/web/. docs/models-obesity/
+
       - uses: actions/configure-pages@v5
 
       - uses: actions/upload-pages-artifact@v3
