@@ -56,7 +56,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: arunviswanathan91/models-obesity
-          ref: 4f67be5d1d96f655d1ba5ac9f23f11f6d9be344b
+          ref: 8cb310367da46eae53057e41a042eb6d4a512a89
           path: atlas-source
           persist-credentials: false
 
